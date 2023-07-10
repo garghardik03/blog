@@ -1,0 +1,17 @@
+<!-- payment.html -->
+<form action="/payment/success" method="POST">
+    <script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        data-key="YOUR_API_KEY"
+        data-amount="{{ order.amount }}"
+        data-currency="INR"
+        data-order_id="{{ order.id }}"
+        data-buttontext="Pay with Razorpay"
+        data-name="Your Company Name"
+        data-description="Payment"
+        data-image="https://your-company-logo.png"
+        data-prefill.name="John Doe"
+        data-prefill.email="john.doe@example.com"
+        data-theme.color="#F37254"
+    ></script>
+</form>

@@ -7,6 +7,10 @@ import secrets
 from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Mail, Message
 import pymongo
+import razorpay
+
+
+razorpay_client = razorpay.Client(auth=('rzp_test_3fT7czS7jEsTzs', 'Ne27btY8oetWfz3rAy7pe6dB'))
 
 
 MONGO_HOST_URL = 'mongodb://localhost:27017/'
@@ -34,6 +38,60 @@ app.config['MAIL_PASSWORD'] = MAIL_PASSWORD
 mongo = PyMongo(app)
 bcrypt = Bcrypt(app)
 mail = Mail(app)
+
+@app.route('/payment', methods=['POST','GET'])
+def payment():
+    # Get the payment amount from the request
+    amount = request.form.get('amount')
+    if amount:
+        amount = int(amount) * 100  # Convert to paise
+    else:
+        # Show an error message
+        flash('Amount is required!')
+        return redirect(url_for('payment'))
+
+    # Create a Razorpay order
+    order = razorpay_client.order.create({'amount': amount, 'currency': 'INR'})
+
+    # Save the order details to MongoDB
+    client = pymongo.MongoClient('mongodb://localhost:27017/')
+    db = client['Blog'] 
+    orders = db['orders']
+    orders.insert_one({'order_id': order['id'], 'amount': amount})
+
+    # Render the payment form with the order details
+    return render_template('payment.html', order=order)
+
+@app.route('/payment/success', methods=['POST'])
+def payment_success():
+    # Get the payment response from the request
+    response = request.form
+
+    # Verify the payment signature
+    signature = response.get('razorpay_signature')
+    order_id = response.get('razorpay_order_id')
+    payment_id = response.get('razorpay_payment_id')
+
+    # Verify the payment signature using the Razorpay client
+    try:
+        razorpay_client.utility.verify_payment_signature({
+            'razorpay_order_id': order_id,
+            'razorpay_payment_id': payment_id,
+            'razorpay_signature': signature
+        })
+    except razorpay.errors.SignatureVerificationError:
+        return 'Payment verification failed'
+
+    # Update the payment status in MongoDB
+    client = pymongo.MongoClient('mongodb://localhost:27017/')
+    db = client['Blog']
+    orders = db['orders']
+    orders.update_one({'order_id': order_id}, {'$set': {'status': 'success'}})
+
+    # Render the payment success page
+    return render_template('payment_success.html')
+
+
 
 
 @app.before_request
