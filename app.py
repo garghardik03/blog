@@ -14,12 +14,6 @@ razorpay_client = razorpay.Client(auth=('rzp_test_3fT7czS7jEsTzs', 'Ne27btY8oetW
 MONGO_HOST_URL = 'mongodb://localhost:27017/'
 MONGO_DATABASE_NAME = 'Blog'
 
-# MAIL_SERVER='smtp.gmail.com' 
-# MAIL_PORT=587
-# MAIL_USE_TLS=True
-# MAIL_USERNAME='dmyhuev376@iemail.one' #it is the email id from which you want to send the mail
-# MAIL_PASSWORD='hardik. 203' # it is the password of the email id from which you want to send the mail
-
 
 salt = 'owui4ht3uhtl2thloKSFB'
 
@@ -28,11 +22,6 @@ app.secret_key = os.urandom(24)
 app.config['MONGO_URI'] = 'mongodb://localhost:27017/Blog'
 app.config['SECRET_KEY'] = secrets.token_hex(16)
 app.config['SECURITY_PASSWORD_SALT'] = salt
-# app.config['MAIL_SERVER'] = MAIL_SERVER
-# app.config['MAIL_PORT'] = MAIL_PORT
-# app.config['MAIL_USE_TLS'] = MAIL_USE_TLS
-# app.config['MAIL_USERNAME'] = MAIL_USERNAME
-# app.config['MAIL_PASSWORD'] = MAIL_PASSWORD
 mongo = PyMongo(app)
 bcrypt = Bcrypt(app)
 
