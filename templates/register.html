@@ -1,21 +1,38 @@
 {% extends "layout.html" %}
 {% block content %}
 <form action="{{ url_for('register') }}" method="post">
-    <label> First Name
-        <input type="text" name="usr_fname">
-    </label>
-    <label> Last Name
-        <input type="text" name="usr_lname">
-    </label>
-    <label> Email
-        <input type="email" name="usr_eml">
-    </label>
-    <label> Mobile Number
-        <input type="number" name="usr_phone">
-    </label>
-    <label> Password
-        <input type="password" name="usr_pwd">
-    </label>
-    <button type="submit">Register</button>
+<div class="form-group">
+    <label>First Name</label>
+    <input type="text" name="usr_fname">
+</div>
+<div class="form-group">
+    <label>Last Name</label>
+    <input type="text" name="usr_lname">  
+</div>
+<div class="form-group">
+    <label>Email</label>
+    <input type="email" name="usr_eml">
+</div>
+<div class="form-group">
+    <label>Mobile Number</label>
+    <input type="number" name="usr_phone">
+</div>
+<div class="form-group">
+    <label>Password</label>
+    <input type="password" name="usr_pwd">
+</div>
+<div class="form-group">
+    <label>Security Question</label>
+    <select name="sec_question">
+        <option value="mother_name">What is your mother's maiden name?</option>
+        <option value="birth_place">What city were you born in?</option>
+        <option value="pet_name">What is the name of your first pet?</option>
+    </select>
+</div>  
+<div class="form-group">
+    <label>Security Answer</label>
+    <input type="text" name="sec_answer">
+</div>
+<button type="submit">Register</button>
 </form>
 {% endblock content %}

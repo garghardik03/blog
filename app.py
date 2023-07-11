@@ -16,7 +16,7 @@ razorpay_client = razorpay.Client(auth=('rzp_test_3fT7czS7jEsTzs', 'Ne27btY8oetW
 MONGO_HOST_URL = 'mongodb://localhost:27017/'
 MONGO_DATABASE_NAME = 'Blog'
 
-MAIL_SERVER='smtp@gmail.com' 
+MAIL_SERVER='smtp.gmail.com' 
 MAIL_PORT=587
 MAIL_USE_TLS=True
 MAIL_USERNAME='dmyhuev376@iemail.one' #it is the email id from which you want to send the mail
@@ -142,7 +142,7 @@ def register():
     elif request.method == 'POST':
         if register_auth_user(usr_eml=request.form['usr_eml'], usr_fname=request.form['usr_fname'],
                               usr_lname=request.form['usr_lname'], usr_pwd=request.form['usr_pwd'],
-                              usr_phone=request.form['usr_phone']):
+                              usr_phone=request.form['usr_phone'],sec_question=request.form['sec_question'], sec_answer=request.form['sec_answer']):
             flash("Registered Successfullly", "success")
             return render_template('login.html')
         else:
@@ -204,32 +204,6 @@ def account():
 
 
 
-def generate_reset_token(user):
-    s = URLSafeTimedSerializer(app.config['SECRET_KEY'])
-    return s.dumps(user['usr_eml'], salt=app.config['SECURITY_PASSWORD_SALT'])
-
-
-def verify_reset_token(token):
-    s = URLSafeTimedSerializer(app.config['SECRET_KEY'])
-    try:
-        email = s.loads(token, salt=app.config['SECURITY_PASSWORD_SALT'], max_age=3600)
-        return email
-    except:
-        return None
-
-
-def send_password_reset_email(user):
-    token = generate_reset_token(user)
-    reset_link = request.host_url + f'reset_password/{token}'
-    msg = Message(
-        subject='Password Reset',
-        sender=app.config['MAIL_USERNAME'],
-        recipients=[user['usr_eml']],
-        body=f"Hello {user['usr_fname']},\n\nYou have requested to reset your password. Please click the link below to reset your password:\n\n{reset_link}\n\nIf you didn't request this, please ignore this email.",
-    )
-    mail.send(msg)
-
-
 def generate_password_hash(password):
     return bcrypt.generate_password_hash(password).decode('utf-8')
 
@@ -242,15 +216,46 @@ def check_password_hash(password_hash, password):
 def reset_password():
     if request.method == 'POST':
         email = request.form['email']
-        user = mongo.db.auth_user.find_one({"usr_eml": email})
-        if user:
-            send_password_reset_email(user)
-            flash('Check your email for the instructions to reset your password', 'info')
+        password = request.form['password']
+        sec_question = request.form['sec_question']
+        sec_answer = request.form['sec_answer']
+        
+        # Find user by email 
+        user = mongo.db.collection.find_one({'usr_eml': email})
+        
+        if user is not None:
+            # Validate security question and answer
+            if user['sec_question'] == sec_question and user['sec_answer'] == sec_answer:
+                # Hash the new password
+                hashed_password = generate_password_hash(password)
+            
+                # Update user password
+                mongo.db.collection.update_one({'usr_eml': email}, {'$set': {'usr_pwd': hashed_password}})
+            
+                flash('Password updated!', 'success')
+                return redirect(url_for('login'))
+            else:
+                flash('Security answer is incorrect.', 'danger')
+                return redirect(url_for('reset_password'))
         else:
-            flash('Email not found', 'warning')
-        return redirect(url_for('login'))
+            flash('No user found with that email address.', 'danger')
+            return redirect(url_for('reset_password'))
+            
     return render_template('reset_password.html')
 
 
+@app.route('/contact', methods=['GET', 'POST'])
+def contact():
+    #the details filled by the user in the contact form will be stored in the database in the collection contact
+    if request.method == 'POST':
+        #create a collection contact in the database
+        contact = mongo.db.contact
+        #insert the details in the database
+        # the message is not inserted as a whole in the databse so write a code such that whole message is inserted in the database
+        mongo.db.contact.insert_one({'name': request.form['name'], 'email': request.form['email'], 'message': request.form['message']})
+        flash("Your message has been sent", "success")
+        return redirect(url_for('contact'))
+    return render_template('contact.html')
+
 if __name__ == '__main__':
-    app.run(debug=True, port=8000)
+    app.run(debug=True, port=5000)

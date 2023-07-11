@@ -4,26 +4,12 @@ from flask import request
 import hashlib
 import pymongo
 import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-
 
 
 # Database Configuration parameters
 MONGO_HOST_URL = 'mongodb://localhost:27017/'  # Example: "mongodb+srv://<DB-ID>.mongodb.net" or "mongodb://localhost:27017/"
 MONGO_DATABASE_NAME = 'Blog'
 
-# # Mailjet Configuration
-# MAILJET_API_KEY = '7139ce4e6effcf6a58e90c552c8f0755'
-# MAILJET_API_SECRET = 'bdc3371dbbcd69117fbb542f880bd25a'
-# MAILJET_SENDER_EMAIL = 'garg2003hardik@gmail.com'
-# MAILJET_SENDER_NAME = 'Hardik'
-
-# app.config['MAIL_SERVER'] = 'your-mail-server'
-# app.config['MAIL_PORT'] = 587
-# app.config['MAIL_USE_TLS'] = True
-# app.config['MAIL_USERNAME'] = 'your-email'
-# app.config['MAIL_PASSWORD'] = 'your-password'
 
 
 
@@ -35,7 +21,7 @@ def string_hash(text):
 
 
 
-def register_auth_user(usr_fname, usr_lname, usr_eml, usr_pwd, usr_phone):
+def register_auth_user(usr_fname, usr_lname, usr_eml, usr_pwd, usr_phone,sec_question,sec_answer):
     
     client = pymongo.MongoClient(MONGO_HOST_URL)
     db = client[MONGO_DATABASE_NAME]
@@ -48,7 +34,7 @@ def register_auth_user(usr_fname, usr_lname, usr_eml, usr_pwd, usr_phone):
     hashed_pwd = string_hash(usr_pwd)
 
     new_user_data = {'usr_fname': usr_fname, 'usr_lname': usr_lname, 'usr_eml': usr_eml, 'usr_pwd': hashed_pwd,
-                     'usr_phone': usr_phone, 'is_activated': 'False','profile_image':'download.jpeg'}
+                     'usr_phone': usr_phone, 'is_activated': 'False','profile_image':'download.jpeg','sec_question':sec_question,'sec_answer':sec_answer}
     ins = auth_users_col.insert_one(new_user_data)
 
     # Generating a validation key
