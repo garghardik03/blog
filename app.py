@@ -4,8 +4,6 @@ from flask_bcrypt import Bcrypt
 from backend import (check_auth_login, register_auth_user, verify_usr_eml, string_hash)
 import os
 import secrets
-from itsdangerous import URLSafeTimedSerializer
-from flask_mail import Mail, Message
 import pymongo
 import razorpay
 
@@ -16,11 +14,11 @@ razorpay_client = razorpay.Client(auth=('rzp_test_3fT7czS7jEsTzs', 'Ne27btY8oetW
 MONGO_HOST_URL = 'mongodb://localhost:27017/'
 MONGO_DATABASE_NAME = 'Blog'
 
-MAIL_SERVER='smtp.gmail.com' 
-MAIL_PORT=587
-MAIL_USE_TLS=True
-MAIL_USERNAME='dmyhuev376@iemail.one' #it is the email id from which you want to send the mail
-MAIL_PASSWORD='hardik. 203' # it is the password of the email id from which you want to send the mail
+# MAIL_SERVER='smtp.gmail.com' 
+# MAIL_PORT=587
+# MAIL_USE_TLS=True
+# MAIL_USERNAME='dmyhuev376@iemail.one' #it is the email id from which you want to send the mail
+# MAIL_PASSWORD='hardik. 203' # it is the password of the email id from which you want to send the mail
 
 
 salt = 'owui4ht3uhtl2thloKSFB'
@@ -30,14 +28,14 @@ app.secret_key = os.urandom(24)
 app.config['MONGO_URI'] = 'mongodb://localhost:27017/Blog'
 app.config['SECRET_KEY'] = secrets.token_hex(16)
 app.config['SECURITY_PASSWORD_SALT'] = salt
-app.config['MAIL_SERVER'] = MAIL_SERVER
-app.config['MAIL_PORT'] = MAIL_PORT
-app.config['MAIL_USE_TLS'] = MAIL_USE_TLS
-app.config['MAIL_USERNAME'] = MAIL_USERNAME
-app.config['MAIL_PASSWORD'] = MAIL_PASSWORD
+# app.config['MAIL_SERVER'] = MAIL_SERVER
+# app.config['MAIL_PORT'] = MAIL_PORT
+# app.config['MAIL_USE_TLS'] = MAIL_USE_TLS
+# app.config['MAIL_USERNAME'] = MAIL_USERNAME
+# app.config['MAIL_PASSWORD'] = MAIL_PASSWORD
 mongo = PyMongo(app)
 bcrypt = Bcrypt(app)
-mail = Mail(app)
+
 
 @app.route('/payment', methods=['POST','GET'])
 def payment():
@@ -221,7 +219,7 @@ def reset_password():
         sec_answer = request.form['sec_answer']
         
         # Find user by email 
-        user = mongo.db.collection.find_one({'usr_eml': email})
+        user = mongo.db.auth_user.find_one({'usr_eml': email})
         
         if user is not None:
             # Validate security question and answer
@@ -230,7 +228,7 @@ def reset_password():
                 hashed_password = generate_password_hash(password)
             
                 # Update user password
-                mongo.db.collection.update_one({'usr_eml': email}, {'$set': {'usr_pwd': hashed_password}})
+                mongo.db.auth_user.update_one({'usr_eml': email}, {'$set': {'usr_pwd': hashed_password}})
             
                 flash('Password updated!', 'success')
                 return redirect(url_for('login'))
